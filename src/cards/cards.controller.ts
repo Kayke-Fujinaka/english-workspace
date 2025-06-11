@@ -22,26 +22,33 @@ import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { Card } from './entities/card.entity';
+import {
+  CardMultipleResponse,
+  CardSingleResponse,
+} from './interfaces/card.interfaces';
 
 @ApiTags('cards')
 @Controller('cards')
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
-  @Post()
+  @Post(':deckId')
   @ApiOperation({ summary: 'Create a card' })
   @ApiCreatedResponse({ description: 'Create a card', type: Card })
   @ApiNotFoundResponse({ description: 'Deck not found' })
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createCardDto: CreateCardDto) {
-    return this.cardsService.create(createCardDto);
+  async create(
+    @Param('deckId') deckId: string,
+    @Body() createCardDto: CreateCardDto,
+  ): Promise<CardSingleResponse> {
+    return this.cardsService.create(deckId, createCardDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all cards' })
   @ApiOkResponse({ description: 'Get all cards', type: [Card] })
   @HttpCode(HttpStatus.OK)
-  findAll() {
+  async findAll(): Promise<CardMultipleResponse> {
     return this.cardsService.findAll();
   }
 
@@ -50,17 +57,21 @@ export class CardsController {
   @ApiOkResponse({ description: 'Get a card by id', type: Card })
   @ApiNotFoundResponse({ description: 'Card not found' })
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<CardSingleResponse> {
     return this.cardsService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch(':id/:deckId')
   @ApiOperation({ summary: 'Update a card by id' })
   @ApiOkResponse({ description: 'Update a card by id', type: Card })
   @ApiNotFoundResponse({ description: 'Card not found' })
   @HttpCode(HttpStatus.OK)
-  update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
-    return this.cardsService.update(id, updateCardDto);
+  async update(
+    @Param('id') id: string,
+    @Param('deckId') deckId: string,
+    @Body() updateCardDto: UpdateCardDto,
+  ): Promise<CardSingleResponse> {
+    return this.cardsService.update(id, deckId, updateCardDto);
   }
 
   @Delete(':id')
@@ -68,7 +79,7 @@ export class CardsController {
   @ApiNoContentResponse({ description: 'Delete a card by id' })
   @ApiNotFoundResponse({ description: 'Card not found' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.cardsService.remove(id);
   }
 }

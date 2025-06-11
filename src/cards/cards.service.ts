@@ -1,71 +1,63 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { DecksService } from '../decks/decks.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { Card } from './entities/card.entity';
+import {
+  CardMultipleResponse,
+  CardSingleResponse,
+} from './interfaces/card.interfaces';
 
 @Injectable()
 export class CardsService {
-  private readonly cards: Card[] = [];
-
   constructor(
-    @Inject(forwardRef(() => DecksService))
+    @InjectRepository(Card)
+    private readonly cardsRepository: Repository<Card>,
     private readonly decksService: DecksService,
   ) {}
 
-  create({ deckId, front, back }: CreateCardDto): Card {
-    const deck = this.decksService.findOne(deckId);
+  async create(
+    deckId: string,
+    { front, back }: CreateCardDto,
+  ): Promise<CardSingleResponse> {
+    await this.decksService.findOne(deckId);
 
-    const card = { id: uuidv4(), deckId: deck.id, front, back };
-    this.cards.push(card);
-    return card;
+    const card = this.cardsRepository.create({ deckId, front, back });
+    await this.cardsRepository.save(card);
+    return { card };
   }
 
-  findAll(): Card[] {
-    return this.cards;
+  async findAll(): Promise<CardMultipleResponse> {
+    const cards = await this.cardsRepository.find();
+    return { cards };
   }
 
-  findByDeckId(deckId: string): Pick<Card, 'id' | 'front' | 'back'>[] {
-    const cards = this.cards.filter((card) => card.deckId === deckId);
-    return cards.map(({ id, front, back }) => ({ id, front, back }));
+  async findOne(id: string): Promise<CardSingleResponse> {
+    const card = await this.cardsRepository.findOne({ where: { id } });
+    if (!card) throw new NotFoundException('Card not found');
+    return { card };
   }
 
-  findOne(id: string): Card {
-    const card = this.cards.find((card) => card.id === id);
-    if (!card) throw new NotFoundException('Card não encontrado');
-    return card;
+  async update(
+    id: string,
+    deckId: string,
+    updateCardDto: UpdateCardDto,
+  ): Promise<CardSingleResponse> {
+    const { card } = await this.findOne(id);
+
+    const isDeckChanged = deckId && deckId !== card.deckId;
+    if (isDeckChanged) await this.decksService.findOne(deckId);
+
+    this.cardsRepository.merge(card, updateCardDto);
+    await this.cardsRepository.save(card);
+    return { card };
   }
 
-  update(id: string, updateCardDto: UpdateCardDto): Card {
-    const card = this.findOne(id);
-
-    const hasNoChanges =
-      (!updateCardDto.front || updateCardDto.front === card.front) &&
-      (!updateCardDto.back || updateCardDto.back === card.back) &&
-      (!updateCardDto.deckId || updateCardDto.deckId === card.deckId);
-    if (hasNoChanges) return card;
-
-    if (updateCardDto.deckId && updateCardDto.deckId !== card.deckId) {
-      this.decksService.findOne(updateCardDto.deckId);
-    }
-
-    const updatedCard = { ...card, ...updateCardDto };
-    const index = this.cards.indexOf(card);
-    this.cards[index] = updatedCard;
-
-    return updatedCard;
-  }
-
-  remove(id: string): void {
-    const card = this.findOne(id);
-    const index = this.cards.indexOf(card);
-    this.cards.splice(index, 1);
+  async remove(id: string): Promise<void> {
+    const { card } = await this.findOne(id);
+    await this.cardsRepository.softDelete(card.id);
   }
 }
