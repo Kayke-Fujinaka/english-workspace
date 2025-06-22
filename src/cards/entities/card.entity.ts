@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -20,10 +21,11 @@ export class Card {
   @Column()
   back: string;
 
-  @Column()
+  @Column({ name: 'deck_id' })
   deckId: string;
 
   @ManyToOne(() => Deck, (deck) => deck.cards)
+  @JoinColumn({ name: 'deck_id' })
   deck?: Deck;
 
   @CreateDateColumn({ name: 'created_at' })
