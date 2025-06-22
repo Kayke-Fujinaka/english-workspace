@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -15,11 +16,13 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
+import { ReviewCardDto } from './dto/review-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { Card } from './entities/card.entity';
 import {
@@ -50,6 +53,36 @@ export class CardsController {
   @HttpCode(HttpStatus.OK)
   async findAll(): Promise<CardMultipleResponse> {
     return this.cardsService.findAll();
+  }
+
+  @Get('review')
+  @ApiOperation({ summary: 'Get cards available for review' })
+  @ApiOkResponse({
+    description: 'Get cards available for review',
+    type: [Card],
+  })
+  @ApiQuery({
+    name: 'deckId',
+    required: false,
+    description: 'Filter by deck ID',
+  })
+  @HttpCode(HttpStatus.OK)
+  async findCardsForReview(
+    @Query('deckId') deckId?: string,
+  ): Promise<CardMultipleResponse> {
+    return this.cardsService.listCardsForReview(deckId);
+  }
+
+  @Post(':id/review')
+  @ApiOperation({ summary: 'Review a card (correct or incorrect)' })
+  @ApiOkResponse({ description: 'Card reviewed successfully', type: Card })
+  @ApiNotFoundResponse({ description: 'Card not found' })
+  @HttpCode(HttpStatus.OK)
+  async reviewCard(
+    @Param('id') id: string,
+    @Body() reviewCardDto: ReviewCardDto,
+  ): Promise<CardSingleResponse> {
+    return this.cardsService.reviewCard(id, reviewCardDto);
   }
 
   @Get(':id')

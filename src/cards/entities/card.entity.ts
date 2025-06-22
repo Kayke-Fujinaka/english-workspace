@@ -28,6 +28,24 @@ export class Card {
   @JoinColumn({ name: 'deck_id' })
   deck?: Deck;
 
+  @Column({ name: 'review_count', default: 0 })
+  reviewCount: number;
+
+  @Column({ name: 'correct_streak', default: 0 })
+  correctStreak: number;
+
+  @Column({ name: 'total_errors', default: 0 })
+  totalErrors: number;
+
+  @Column({ name: 'consecutive_errors', default: 0 })
+  consecutiveErrors: number;
+
+  @Column({ name: 'current_stage', default: 0 })
+  currentStage: number;
+
+  @Column({ name: 'next_review_at', default: new Date() })
+  nextReviewAt: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
