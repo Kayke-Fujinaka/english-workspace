@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -22,6 +24,7 @@ export class CardsService {
   constructor(
     @InjectRepository(Card)
     private readonly cardsRepository: Repository<Card>,
+    @Inject(forwardRef(() => DecksService))
     private readonly decksService: DecksService,
   ) {}
 
@@ -64,6 +67,30 @@ export class CardsService {
     });
 
     return { cards };
+  }
+
+  async getReviewStats(
+    deckId: string,
+  ): Promise<{ new: number; review: number }> {
+    const newCards = await this.cardsRepository
+      .createQueryBuilder('card')
+      .where('card.deckId = :deckId', { deckId })
+      .andWhere('card.reviewCount = 0')
+      .getCount();
+
+    const reviewCards = await this.cardsRepository
+      .createQueryBuilder('card')
+      .where('card.deckId = :deckId', { deckId })
+      .andWhere('card.reviewCount > 0')
+      .andWhere('(card.nextReviewAt IS NULL OR card.nextReviewAt <= :now)', {
+        now: new Date(),
+      })
+      .getCount();
+
+    return {
+      new: newCards,
+      review: reviewCards,
+    };
   }
 
   async reviewCard(

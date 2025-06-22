@@ -23,8 +23,8 @@ import { CreateDeckDto } from './dto/create-deck.dto';
 import { UpdateDeckDto } from './dto/update-deck.dto';
 import { Deck } from './entities/deck.entity';
 import {
-  DeckMultipleResponse,
   DeckSingleResponse,
+  DeckWithStats,
 } from './interfaces/deck.interfaces';
 
 @ApiTags('decks')
@@ -43,19 +43,19 @@ export class DecksController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all decks' })
-  @ApiOkResponse({ description: 'Get all decks', type: [Deck] })
+  @ApiOperation({ summary: 'Get all decks with review statistics' })
+  @ApiOkResponse({ description: 'Get all decks with stats', type: [Deck] })
   @HttpCode(HttpStatus.OK)
-  async findAll(): Promise<DeckMultipleResponse> {
+  async findAll(): Promise<{ decks: DeckWithStats[] }> {
     return this.decksService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a deck by id' })
-  @ApiOkResponse({ description: 'Get a deck by id', type: Deck })
+  @ApiOperation({ summary: 'Get a deck by id with review statistics' })
+  @ApiOkResponse({ description: 'Get a deck by id with stats', type: Deck })
   @ApiNotFoundResponse({ description: 'Deck not found' })
   @HttpCode(HttpStatus.OK)
-  async findOne(@Param('id') id: string): Promise<DeckSingleResponse> {
+  async findOne(@Param('id') id: string): Promise<{ deck: DeckWithStats }> {
     return this.decksService.findOne(id);
   }
 

@@ -7,3 +7,12 @@ export interface DeckSingleResponse {
 export interface DeckMultipleResponse {
   decks: Deck[];
 }
+
+export interface DeckStats {
+  new: number;
+  review: number;
+}
+
+export interface DeckWithStats extends Deck {
+  stats: DeckStats;
+}
