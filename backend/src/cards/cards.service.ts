@@ -54,9 +54,11 @@ export class CardsService {
     return { card };
   }
 
-  async listCardsForReview(deckId?: string): Promise<CardMultipleResponse> {
+  async listCardsForReview(deckId: string): Promise<CardMultipleResponse> {
+    await this.decksService.findOne(deckId);
+
     const whereCondition = {
-      ...(deckId && { deckId }),
+      deckId,
       nextReviewAt: Or(LessThanOrEqual(new Date()), IsNull()),
     };
 

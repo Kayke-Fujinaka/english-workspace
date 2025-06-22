@@ -63,12 +63,12 @@ export class CardsController {
   })
   @ApiQuery({
     name: 'deckId',
-    required: false,
+    required: true,
     description: 'Filter by deck ID',
   })
   @HttpCode(HttpStatus.OK)
   async findCardsForReview(
-    @Query('deckId') deckId?: string,
+    @Query('deckId') deckId: string,
   ): Promise<CardMultipleResponse> {
     return this.cardsService.listCardsForReview(deckId);
   }
