@@ -4,7 +4,7 @@ export const Navbar = () => {
   const NAVBAR_ITEMS = [
     { id: "home", label: "Home", href: "/" },
     { id: "flashcards", label: "Flashcards", href: "/flashcards" },
-    { id: "leitura", label: "Leitura", href: "/leitura" },
+    { id: "reading", label: "Reading", href: "/reading" },
   ];
 
   return (
