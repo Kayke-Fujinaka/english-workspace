@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LuFile } from "react-icons/lu";
+import { LuFile, LuPlus } from "react-icons/lu";
 import { toast } from "react-toastify";
 
 import { Loader } from "@/components";
@@ -91,6 +91,20 @@ export default function Flashcards() {
             </Link>
           ))}
         </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto mt-6 flex gap-4 justify-center">
+        <button className="cursor-pointer text-sm flex items-center gap-2 px-4 py-2 text-blue-600 border-blue-600 border bg-white hover:text-white hover:bg-blue-700 rounded-lg font-bold transition-all duration-300">
+          <LuPlus className="w-4 h-4" />
+          Adicionar Deck
+        </button>
+
+        {decks.length < 0 && (
+          <button className="cursor-pointer text-sm flex items-center gap-2 px-4 py-2 text-white bg-blue-600 border-blue-600 border hover:bg-blue-700 rounded-lg font-bold transition-all duration-300">
+            <LuPlus className="w-4 h-4" />
+            Adicionar Card
+          </button>
+        )}
       </div>
     </div>
   );
